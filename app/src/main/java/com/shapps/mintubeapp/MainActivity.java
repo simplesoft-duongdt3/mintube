@@ -27,9 +27,9 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.webkit.WebResourceRequest;
@@ -52,8 +52,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
@@ -161,28 +159,39 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         if (String.valueOf(request.getUrl()).contains("http://m.youtube.com/watch?") ||
                                 String.valueOf(request.getUrl()).contains("https://m.youtube.com/watch?")) {
                             String url = String.valueOf(request.getUrl());
-                            Log.d("Yay Catches!!!! ", url);
-                            //Video Id
-                            VID = url.substring(url.indexOf("&v=") + 3, url.length());
-                            Log.d("VID ", VID);
-                            //Playlist Id
-                            final String listID = url.substring(url.indexOf("&list=") + 6, url.length());
-                            Pattern pattern = Pattern.compile(
-                                    "([A-Za-z0-9_-]+)&[\\w]+=.*",
-                                    Pattern.CASE_INSENSITIVE);
-                            Matcher matcher = pattern.matcher(listID.toString());
-                            Log.d("ListID", listID);
-                            PID = "";
-                            if (matcher.matches()) {
-                                PID = matcher.group(1);
+
+                            {
+                                int indexVideoId1 = url.indexOf("&v=");
+                                int indexVideoId2 = url.indexOf("?v=");
+                                int indexStart = Math.max(indexVideoId1, indexVideoId2);
+                                int indexNextParamAfterId = url.indexOf('&', indexStart + 3);
+                                int indexEnd = indexNextParamAfterId >= 0 ? indexNextParamAfterId : url.length();
+
+                                Log.d("Yay Catches!!!! ", url);
+                                //Video Id
+                                VID = url.substring(indexStart + 3, indexEnd);
+                                Log.d("VID ", VID);
                             }
-                            if (listID.contains("m.youtube.com")) {
-                                Log.d("Not a ", "Playlist.");
-                                PID = null;
-                            } else {
-                                Constants.linkType = 1;
-                                Log.d("PlaylistID ", PID);
+
+                            {
+                                int indexVideoId1 = url.indexOf("&list=");
+                                int indexVideoId2 = url.indexOf("?list=");
+                                int indexStart = Math.max(indexVideoId1, indexVideoId2);
+                                int indexNextParamAfterId = url.indexOf('&', indexStart + 6);
+                                int indexEnd = indexNextParamAfterId >= 0 ? indexNextParamAfterId : url.length();
+
+                                //Playlist Id
+                                final String listID = indexStart >= 0 ? url.substring(indexStart + 6, indexEnd) : null;
+                                if (listID == null) {
+                                    Log.d("Not a ", "Playlist.");
+                                    PID = null;
+                                } else {
+                                    PID = listID;
+                                    Constants.linkType = 1;
+                                    Log.d("PlaylistID ", PID);
+                                }
                             }
+
                             Handler handler = new Handler(getMainLooper());
                             final String finalPID = PID;
                             handler.post(new Runnable() {
