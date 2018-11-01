@@ -2,6 +2,7 @@ package com.shapps.mintubeapp;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -304,7 +305,7 @@ public class PlayerService extends Service implements View.OnClickListener{
                 editor.putInt(getString(R.string.count), val);
                 editor.commit();
                 if (val == 0) {
-                    startActivity(new Intent(getAppContext(), RateOrStar.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                    //startActivity(new Intent(getAppContext(), RateOrStar.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                 }
             }
         }
@@ -351,6 +352,7 @@ public class PlayerService extends Service implements View.OnClickListener{
         //Notification
         notificationManager = (NotificationManager) getSystemService(this.NOTIFICATION_SERVICE);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+                .setChannelId(getString(R.string.app_name))
 
                 .setSmallIcon(R.drawable.ic_status_bar)
 
@@ -360,6 +362,14 @@ public class PlayerService extends Service implements View.OnClickListener{
 
                 // Automatically dismiss the notification when it is touched.
                 .setAutoCancel(false);
+        String channelId = getString(R.string.app_name);
+        if (Build.VERSION.SDK_INT >= 26 ) {
+            NotificationChannel notificationChannel = new NotificationChannel(channelId, channelId, NotificationManager.IMPORTANCE_DEFAULT);
+            notificationChannel.setDescription(channelId);
+            notificationChannel.setSound(null, null);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+
 
         notification = builder.build();
 
